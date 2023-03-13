@@ -389,6 +389,8 @@ def upload_close():
     SecUploadFileModeEntry['state'] = 'disable'
 
 def upload_open():
+    dbg_mx = showwarning(title="文件上传拦截说明",
+                      message="文件上传配置可对用户上传文件进行拦截保存操作")
     variable_SecUploadDir.set("/opt/modsecurity/var/upload/")
     SecUploadDirEntry['state'] = 'normal'
 
@@ -436,14 +438,18 @@ rightPane.add(SecUploadDirEntry, padx=20, pady=5)
 
 # 选择保存文件类型
 def warning_uploadclose():
-    upcl_mx = showwarning(title="警告", message="此选择下将不会保存事务处理后的拦截文件")
+    upcl_mx = showwarning(title="提示", message="此选择下将不会保存事务处理后的拦截文件，在事务处理完成后会自动删除")
+def warning_upoloadon():
+    upon_mx = showwarning(title="提示", message="此选择下将会保存所有用户上传文件，注意可能引起的磁盘占用问题")
+def warning_upoloadrelevant():
+    upre_mx = showwarning(title="提示", message="此选择下仅会保存可疑请求下的上传文件")
 SecUploadKeepFiles = tk.PanedWindow(frame, width=460, height=35)
 leftPane = tk.PanedWindow(SecUploadKeepFiles, width=200, height=35)
 rightPane = tk.PanedWindow(SecUploadKeepFiles, width=260, height=35)
-SecUploadKeepFilesLabel = tk.Label(text="保存上传文件类型")
+SecUploadKeepFilesLabel = tk.Label(text="是否保存上传文件")
 sukf_model = tk.IntVar()
-SecUploadKeepFilesEntry1 = tk.Radiobutton(frame, text='仅相关', value=1, variable=sukf_model)
-SecUploadKeepFilesEntry2 = tk.Radiobutton(frame, text='全部', value=2, variable=sukf_model)
+SecUploadKeepFilesEntry1 = tk.Radiobutton(frame, text='仅相关', value=1, variable=sukf_model, command=warning_upoloadrelevant)
+SecUploadKeepFilesEntry2 = tk.Radiobutton(frame, text='全部', value=2, variable=sukf_model, command=warning_upoloadon)
 SecUploadKeepFilesEntry3 = tk.Radiobutton(frame, text='关闭', value=3, variable=sukf_model, command=warning_uploadclose)
 sukf_model.set(1)
 SecUploadKeepFiles.grid()
@@ -485,13 +491,59 @@ DEBUGLOGLabel = tk.Label(text="*** 调试日志设置 ***")
 DEBUGLOG_Boundary.grid()
 DEBUGLOG_Boundary.add(DEBUGLOGLabel)
 
+def debug_open():
+    dbg_mx = showwarning(title="调试日志及说明",
+                      message="开启调试日志会提供丰富的ModSecurity操作细节.\n注意由于其对性能存在消极影响，默认一般推荐为关闭状态")
+
+    SecDebugLogEntry['state'] = 'normal'
+    variable_SecDebugLog.set("/opt/modsecurity/var/log/debug.log")
+
+    SecDebugLogLevelEntry0['state'] = 'normal'
+    SecDebugLogLevelEntry1['state'] = 'normal'
+    SecDebugLogLevelEntry2['state'] = 'normal'
+    SecDebugLogLevelEntry3['state'] = 'normal'
+    SecDebugLogLevelEntry4['state'] = 'normal'
+    SecDebugLogLevelEntry5['state'] = 'normal'
+    SecDebugLogLevelEntry9['state'] = 'normal'
+    sdll_model.set('3')
+
+def debug_close():
+    SecDebugLogEntry['state'] = 'disable'
+    variable_SecDebugLog.set("--关闭--")
+
+    SecDebugLogLevelEntry0['state'] = 'disable'
+    SecDebugLogLevelEntry1['state'] = 'disable'
+    SecDebugLogLevelEntry2['state'] = 'disable'
+    SecDebugLogLevelEntry3['state'] = 'disable'
+    SecDebugLogLevelEntry4['state'] = 'disable'
+    SecDebugLogLevelEntry5['state'] = 'disable'
+    SecDebugLogLevelEntry9['state'] = 'disable'
+    sdll_model.set('10')
+
+# 开启调试日志
+SecDebugLogAccess = tk.PanedWindow(frame, width=460, height=35)
+leftPane = tk.PanedWindow(SecDebugLogAccess, width=200, height=35)
+rightPane = tk.PanedWindow(SecDebugLogAccess, width=260, height=35)
+SecDebugLogAccessLabel = tk.Label(text="开启调试日志")
+sdl_open = tk.IntVar()
+SecDebugLogAccessEntry1 = tk.Radiobutton(frame, text='开启', value=1, variable=sdl_open, command=debug_open)
+SecDebugLogAccessEntry2 = tk.Radiobutton(frame, text='关闭', value=2, variable=sdl_open, command=debug_close)
+sdl_open.set(2)
+SecDebugLogAccess.grid()
+SecDebugLogAccess.add(leftPane)
+SecDebugLogAccess.add(rightPane)
+leftPane.add(SecDebugLogAccessLabel)
+rightPane.add(SecDebugLogAccessEntry1)
+rightPane.add(SecDebugLogAccessEntry2)
+
 # 调试日志保存位置
 SecDebugLog = tk.PanedWindow(frame, width=460, height=35)
 leftPane = tk.PanedWindow(SecDebugLog, width=200, height=35)
 rightPane = tk.PanedWindow(SecDebugLog, width=260, height=35)
 SecDebugLogLabel = tk.Label(text="调试日志保存位置")
-SecDebugLogEntry = tk.Entry(frame)
-SecDebugLogEntry.insert(0, "/opt/modsecurity/var/log/debug.log")
+variable_SecDebugLog = tk.StringVar()
+variable_SecDebugLog.set("/opt/modsecurity/var/log/debug.log")
+SecDebugLogEntry = tk.Entry(frame, text=variable_SecDebugLog)
 SecDebugLog.grid()
 SecDebugLog.add(leftPane)
 SecDebugLog.add(rightPane)
@@ -502,13 +554,23 @@ rightPane.add(SecDebugLogEntry, padx=20, pady=5)
 # 日志记录等级
 def helpDebugLogLevel():
     newWindow = tk.Toplevel(window)
-    newWindow.geometry("300x400")
+    newWindow.geometry("500x300")
     newWindow.title("日志记录等级说明")
-    helpLabel = tk.Label(newWindow, padx=20, pady=20,
-                         text="0 -- no logging\n1  --  Errors\n2  --  Warnings\n3  --  Notices\n4  --  "
-                              "Informational\n5  --  Detailed\n9 --  Everything")
-    helpLabel.pack()
+    helpText = tk.Text(newWindow, padx=20, pady=20)
+    helpText.pack()
+    helpText.insert(tk.INSERT, "\
+0: no logging\n\n\
+1: errors (intercepted requests) only\n\n\
+2: warnings\n\n\
+3: notices\n\n\
+4: details of how transactions are handled\n\n\
+5: as above, but including information about each piece of information handled\n\n\
+9: log everything, including very detailed debugging information\n\n")
+    helpText.config(state=tk.DISABLED)
 
+def performance_warning():
+    pf_mx = showwarning(title="警告",
+                      message="实际产品中应谨慎使用过高等级的日志记录，该行为会对性能造成较大的影响")
 
 SecDebugLogLevel = tk.PanedWindow(frame, width=460, height=35)
 leftPane = tk.PanedWindow(SecDebugLogLevel, width=120, height=35)
@@ -520,9 +582,9 @@ SecDebugLogLevelEntry0 = tk.Radiobutton(frame, text='0', value=0, variable=sdll_
 SecDebugLogLevelEntry1 = tk.Radiobutton(frame, text='1', value=1, variable=sdll_model)
 SecDebugLogLevelEntry2 = tk.Radiobutton(frame, text='2', value=2, variable=sdll_model)
 SecDebugLogLevelEntry3 = tk.Radiobutton(frame, text='3', value=3, variable=sdll_model)
-SecDebugLogLevelEntry4 = tk.Radiobutton(frame, text='4', value=4, variable=sdll_model)
-SecDebugLogLevelEntry5 = tk.Radiobutton(frame, text='5', value=5, variable=sdll_model)
-SecDebugLogLevelEntry9 = tk.Radiobutton(frame, text='9', value=9, variable=sdll_model)
+SecDebugLogLevelEntry4 = tk.Radiobutton(frame, text='4', value=4, variable=sdll_model, command=performance_warning)
+SecDebugLogLevelEntry5 = tk.Radiobutton(frame, text='5', value=5, variable=sdll_model, command=performance_warning)
+SecDebugLogLevelEntry9 = tk.Radiobutton(frame, text='9', value=9, variable=sdll_model, command=performance_warning)
 sdll_model.set(3)
 SecDebugLogLevel.grid()
 SecDebugLogLevel.add(leftPane, padx=42, width=110, sticky='e')
@@ -537,11 +599,60 @@ rightPane.add(SecDebugLogLevelEntry4)
 rightPane.add(SecDebugLogLevelEntry5)
 rightPane.add(SecDebugLogLevelEntry9)
 
+debug_close()
+
+
+
 '''-- Audit log configuration --'''
 AUDITLOG_Boundary = tk.PanedWindow(frame, width=460, height=40)
 AUDITLOGLabel = tk.Label(text="*** 审计日志设置 ***")
 AUDITLOG_Boundary.grid()
 AUDITLOG_Boundary.add(AUDITLOGLabel)
+
+def audit_close():
+    showinfo(title="提示", message="此选项下会关闭审计日志")
+    SecAuditLogRelevantStatusEntry['state'] = 'disable'
+    variable_SecAuditLogRelevantStatus.set("--关闭--")
+
+    SecAuditLogPartsEntry['state'] = 'disable'
+    variable_SecAuditLogParts.set("--关闭--")
+
+    SecAuditLogTypeEntry1['state'] = 'disable'
+    SecAuditLogTypeEntry2['state'] = 'disable'
+    salt_model.set(0)
+
+    SecAuditLogEntry['state'] = 'disable'
+    fileordir.set("--关闭--")
+
+def audit_relevant():
+    showinfo(title="提示", message="此选项下仅会记录触发告警或符合下方状态码的事务")
+    SecAuditLogRelevantStatusEntry['state'] = 'normal'
+    variable_SecAuditLogRelevantStatus.set("\"^(?:5|4(?!04))\"")
+
+    SecAuditLogPartsEntry['state'] = 'normal'
+    variable_SecAuditLogParts.set("ABIJDEFHZ")
+
+    SecAuditLogTypeEntry1['state'] = 'normal'
+    SecAuditLogTypeEntry2['state'] = 'normal'
+    salt_model.set(1)
+
+    SecAuditLogEntry['state'] = 'normal'
+    fileordir.set("/var/log/modsec_audit.log")
+
+def audit_open():
+    showinfo(title="提示", message="此选项下会记录所有事务，适用于调试")
+    SecAuditLogRelevantStatusEntry['state'] = 'normal'
+    variable_SecAuditLogRelevantStatus.set("\"^(?:5|4(?!04))\"")
+
+    SecAuditLogPartsEntry['state'] = 'normal'
+    variable_SecAuditLogParts.set("ABIJDEFHZ")
+
+    SecAuditLogTypeEntry1['state'] = 'normal'
+    SecAuditLogTypeEntry2['state'] = 'normal'
+    salt_model.set(1)
+
+    SecAuditLogEntry['state'] = 'normal'
+    fileordir.set("/var/log/modsec_audit.log")
 
 # 日志记录类型
 SecAuditEngine = tk.PanedWindow(frame, width=460, height=35)
@@ -549,9 +660,9 @@ leftPane = tk.PanedWindow(SecAuditEngine, width=200, height=35)
 rightPane = tk.PanedWindow(SecAuditEngine, width=260, height=35)
 SecAuditEngineLabel = tk.Label(text="日志记录类型")
 sae_model = tk.IntVar()
-SecAuditEngineEntry1 = tk.Radiobutton(frame, text='仅相关', value=1, variable=sae_model)
-SecAuditEngineEntry2 = tk.Radiobutton(frame, text='全部', value=2, variable=sae_model)
-SecAuditEngineEntry3 = tk.Radiobutton(frame, text='关闭', value=3, variable=sae_model)
+SecAuditEngineEntry1 = tk.Radiobutton(frame, text='仅相关', value=1, variable=sae_model, command=audit_relevant)
+SecAuditEngineEntry2 = tk.Radiobutton(frame, text='全部', value=2, variable=sae_model, command=audit_open)
+SecAuditEngineEntry3 = tk.Radiobutton(frame, text='关闭', value=3, variable=sae_model, command=audit_close)
 sae_model.set(1)
 SecAuditEngine.grid()
 SecAuditEngine.add(leftPane)
@@ -566,8 +677,9 @@ SecAuditLogRelevantStatus = tk.PanedWindow(frame, width=460, height=35)
 leftPane = tk.PanedWindow(SecAuditLogRelevantStatus, width=200, height=35)
 rightPane = tk.PanedWindow(SecAuditLogRelevantStatus, width=260, height=35)
 SecAuditLogRelevantStatusLabel = tk.Label(text="事务状态记录规则")
-SecAuditLogRelevantStatusEntry = tk.Entry(frame)
-SecAuditLogRelevantStatusEntry.insert(0, "\"^(?:5|4(?!04))\"")
+variable_SecAuditLogRelevantStatus = tk.StringVar()
+variable_SecAuditLogRelevantStatus.set("\"^(?:5|4(?!04))\"")
+SecAuditLogRelevantStatusEntry = tk.Entry(frame, text=variable_SecAuditLogRelevantStatus)
 SecAuditLogRelevantStatus.grid()
 SecAuditLogRelevantStatus.add(leftPane)
 SecAuditLogRelevantStatus.add(rightPane)
@@ -575,34 +687,34 @@ leftPane.add(SecAuditLogRelevantStatusLabel)
 rightPane.add(SecAuditLogRelevantStatusEntry, padx=20, pady=5)
 
 # 日志记录内容
+def helpAuditLogParts():
+    newWindow = tk.Toplevel(window)
+    newWindow.geometry("600x400")
+    newWindow.title("日志记录内容说明")
+    helpText = tk.Text(newWindow, width=600, height=300, undo=True, padx=20, pady=20, relief=tk.RIDGE)
+    helpText.pack()
+    helpText.insert(tk.INSERT, "A -- 审计日志标题(强制)\n\n\
+B -- 请求头 \n\n\
+C -- 请求体\n\n\
+D -- 中间人响应头(暂未实现)\n\n\
+E -- 中间人响应体(需开启响应体限制)\n\n\
+F -- 最终响应头\n\n\
+G -- 响应体(暂未实现)\n\n\
+H -- 审计跟踪\n\n\
+I -- C部分的替换,在使用multipart/form-data编码时会记录与C相同的数据。\n但application/x-www-form-urlencoded情况下仅记录参数和假的文件体而不包含文件。\n该选项用于处理不想保存(过大)上传文件于审计日志中的情况\n\n\
+J -- 文件使用multipart/form-data编码上传的信息\n\n\
+K -- 包含其匹配的触发规则列表\n\n\
+Z -- 最终分界，意味条目的最后(强制)\n")
+    helpText.config(state=tk.DISABLED)
+
+
 SecAuditLogParts = tk.PanedWindow(frame, width=460, height=35)
 leftPane = tk.PanedWindow(SecAuditLogParts, width=120, height=35)
 rightPane = tk.PanedWindow(SecAuditLogParts, width=340, height=35)
 SecAuditLogPartsLabel = tk.Label(text="日志记录内容")
-SecAuditLogPartsEntry = tk.Entry(frame)
-SecAuditLogPartsEntry.insert(0, "ABIJDEFHZ")
-
-
-def helpAuditLogParts():
-    newWindow = tk.Toplevel(window)
-    newWindow.geometry("1200x400")
-    newWindow.title("日志记录内容说明")
-    helpLabel = tk.Label(newWindow, padx=20, pady=20, text="\
-A - 审计日志标题(强制)\n \
-B - 请求标题 \n \
-C - 请求体\n \
-D - 中间人响应头\n \
-E - 中间人响应体\n \
-F - 最终响应头(除了日期和服务器标题以外的被apache添加的近期内容传递信息)\n \
-G - 响应体\n \
-H - 审计日志索引\n \
-I - C部分的替换,使用multipart/form-data编码时，在所有的异常情形下会记录与C相同的数据，在这种情况下，会记录假的application/x-www-form-urlencoded内容，这包含参数的相关信息，但不是这个文件的。\n \
-J - 文件使用multipart/form-data编码上传的信息。\n \
-K - 这部分包含一个完整的列表，按顺序匹配（每行一个），这些规则是完全合格的，从而表明继承默认的动作和操作，从2.5.0开始支持。\n \
-Z - 最终分界，意味条目的最后(强制)\n", anchor="w")
-    helpLabel.pack()
-
-
+variable_SecAuditLogParts = tk.StringVar()
+variable_SecAuditLogParts.set("ABIJDEFHZ")
+SecAuditLogPartsEntry = tk.Entry(frame, text=variable_SecAuditLogParts)
 btnHelpAuditLog = tk.Button(frame, image=help_img, command=helpAuditLogParts)
 SecAuditLogParts.grid()
 SecAuditLogParts.add(leftPane, padx=42, width=110, sticky='e')
@@ -617,13 +729,17 @@ fileordir = tk.StringVar()
 
 
 def changeStroageToFile():
+    showinfo(title="Serial", message="此种情况下全部记录会存于一个文件中，便于简单使用，但会由于日志输入的争用导致降低服务器性能")
     SecAuditLogLabel['text'] = "日志保存文件位置"
     fileordir.set("/var/log/modsec_audit.log")
 
 
+
 def changeStorageToDir():
+    showinfo(title="Concurrent", message="为每件事务单独创建日志记录文件，依时间分类。面对大规模日志需求下能够具备更好的扩展性(多项事务可并行记录)，同时也是远程记录时的唯一选择")
     SecAuditLogLabel['text'] = "日志保存目录位置"
     fileordir.set("/opt/modsecurity/var/audit/")
+
 
 
 SecAuditLogType = tk.PanedWindow(frame, width=460, height=35)
@@ -649,7 +765,7 @@ rightPane = tk.PanedWindow(SecAuditLog, width=260, height=35)
 SecAuditLogLabel = tk.Label(text="日志保存文件位置")
 fileordir.set("/var/log/modsec_audit.log")
 SecAuditLogEntry = tk.Entry(frame, textvariable=fileordir)
-SecAuditLog.grid(row=32)
+SecAuditLog.grid(row=33)
 SecAuditLog.add(leftPane)
 SecAuditLog.add(rightPane)
 leftPane.add(SecAuditLogLabel)
@@ -805,49 +921,53 @@ def getInput():
         input = content + option + "\n\n"
         f.writelines(input)
 
-        '''SecUploadDir'''
-        SecUploadDir = SecUploadDirEntry.get()
-        content = "SecUploadDir "
-        option = SecUploadDir
-        input = content + option + "\n\n"
-        f.writelines(input)
+        '''SecUploadAccess'''
+        if sfu_open.get() == 1:
+            '''SecUploadDir'''
+            SecUploadDir = SecUploadDirEntry.get()
+            content = "SecUploadDir "
+            option = SecUploadDir
+            input = content + option + "\n\n"
+            f.writelines(input)
 
-        '''SecUploadKeepFiles'''
-        SecUploadKeepFiles = sukf_model.get()
-        content = "SecUploadKeepFiles "
-        if SecUploadKeepFiles == 1:
-            option = "RelevantOnly"
-        elif SecUploadKeepFiles == 2:
-            option = "On"
-        elif SecUploadKeepFiles == 3:
-            option = "Off"
-        input = content + option + "\n\n"
-        f.writelines(input)
+            '''SecUploadKeepFiles'''
+            SecUploadKeepFiles = sukf_model.get()
+            content = "SecUploadKeepFiles "
+            if SecUploadKeepFiles == 1:
+                option = "RelevantOnly"
+            elif SecUploadKeepFiles == 2:
+                option = "On"
+            elif SecUploadKeepFiles == 3:
+                option = "Off"
+            input = content + option + "\n\n"
+            f.writelines(input)
 
-        '''SecUploadFileMode'''
-        SecUploadFileMode = SecUploadFileModeEntry.get()
-        content = "SecUploadFileMode "
-        option = SecUploadFileMode
-        input = content + option + "\n\n"
-        f.writelines(input)
+            '''SecUploadFileMode'''
+            SecUploadFileMode = SecUploadFileModeEntry.get()
+            content = "SecUploadFileMode "
+            option = SecUploadFileMode
+            input = content + option + "\n\n"
+            f.writelines(input)
 
-        '''SecDebugLog'''
-        SecDebugLog = SecDebugLogEntry.get()
-        content = "SecDebugLog "
-        option = SecDebugLog
-        input = content + option + "\n\n"
-        f.writelines(input)
+        '''SecDebugLogAccess'''
+        if sdl_open.get() == 1:
+            '''SecDebugLog'''
+            SecDebugLog = SecDebugLogEntry.get()
+            content = "SecDebugLog "
+            option = SecDebugLog
+            input = content + option + "\n\n"
+            f.writelines(input)
 
-        '''SecDebugLogLevel'''
-        SecDebugLogLevel = sdll_model.get()
-        content = "SecDebugLogLevel "
-        option = str(SecDebugLogLevel)
-        input = content + option + "\n\n"
-        f.writelines(input)
+            '''SecDebugLogLevel'''
+            SecDebugLogLevel = sdll_model.get()
+            content = "SecDebugLogLevel "
+            option = str(SecDebugLogLevel)
+            input = content + option + "\n\n"
+            f.writelines(input)
 
         '''SecAuditEngine'''
         SecAuditEngine = sae_model.get()
-        content = "SecUploadKeepFiles "
+        content = "SecAuditEngine "
         if SecAuditEngine == 1:
             option = "RelevantOnly"
         elif SecAuditEngine == 2:
@@ -857,46 +977,48 @@ def getInput():
         input = content + option + "\n\n"
         f.writelines(input)
 
-        '''SecAuditLogRelevantStatus'''
-        SecAuditLogRelevantStatus = SecAuditLogRelevantStatusEntry.get()
-        content = "SecAuditLogRelevantStatus "
-        option = SecAuditLogRelevantStatus
-        input = content + option + "\n\n"
-        f.writelines(input)
+        if SecAuditEngine == 1 or SecAuditEngine == 2:
+            '''SecAuditLogRelevantStatus'''
+            SecAuditLogRelevantStatus = SecAuditLogRelevantStatusEntry.get()
+            content = "SecAuditLogRelevantStatus "
+            option = SecAuditLogRelevantStatus
+            input = content + option + "\n\n"
+            f.writelines(input)
 
-        '''SecAuditLogParts'''
-        SecAuditLogParts = SecAuditLogPartsEntry.get()
-        content = "SecAuditLogParts "
-        option = SecAuditLogParts
-        input = content + option + "\n\n"
-        f.writelines(input)
+            '''SecAuditLogParts'''
+            SecAuditLogParts = SecAuditLogPartsEntry.get()
+            content = "SecAuditLogParts "
+            option = SecAuditLogParts
+            input = content + option + "\n\n"
+            f.writelines(input)
 
-        '''SecAuditLogType'''
-        SecAuditLogType = salt_model.get()
-        content = "SecAuditLogType "
-        if SecAuditLogType == 1:
-            option = "Serial"
-        elif SecAuditLogType == 2:
-            option = "Concurrent"
-        input = content + option + "\n\n"
-        f.writelines(input)
+            '''SecAuditLogType'''
+            SecAuditLogType = salt_model.get()
+            content = "SecAuditLogType "
+            if SecAuditLogType == 1:
+                option = "Serial"
+            elif SecAuditLogType == 2:
+                option = "Concurrent"
+            input = content + option + "\n\n"
+            f.writelines(input)
 
-        '''SecAuditLog or SecAuditLogStorageDir'''
-        SecAuditLog = SecAuditLogEntry.get()
-        option = SecAuditLog
-        if SecAuditLogType == 1:
-            content = "SecAuditLog "
-        elif SecAuditLogType == 2:
-            content = "SecAuditLogStorageDir "
-        input = content + option + "\n\n"
-        f.writelines(input)
+            '''SecAuditLog or SecAuditLogStorageDir'''
+            SecAuditLog = SecAuditLogEntry.get()
+            option = SecAuditLog
+            if SecAuditLogType == 1:
+                content = "SecAuditLog "
+            elif SecAuditLogType == 2:
+                content = "SecAuditLogStorageDir "
+            input = content + option + "\n\n"
+            f.writelines(input)
 
         '''SecRule'''
         SecRule = SecRuleEntry.get()
-        content = "SecRule "
-        option = SecRule
-        input = content + option + "\n\n"
-        f.writelines(input)
+        if SecRule != "":
+            content = "SecRule "
+            option = SecRule
+            input = content + option + "\n\n"
+            f.writelines(input)
 
 
 btnOutput = tk.Button(frame, height=1, width=10, text="OUTPUT", command=getInput, font=("Times", 10, "bold"))
