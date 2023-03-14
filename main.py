@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 import tkinter as tk
 from tkinter.messagebox import *
+import webbrowser
 
 window = tk.Tk()
 window.title('防火墙配置文件初始化')
-window.geometry("600x800")
-canvas = tk.Canvas(master=window, width=600, height=800)
+window.geometry("520x800")
+canvas = tk.Canvas(master=window, width=520, height=800)
 scroll = tk.Scrollbar(master=window)
 scroll.pack(side='right', fill='y')
 canvas.pack(side='right')
@@ -26,6 +27,8 @@ def close_warning():
     sec_mx1 = showwarning(title="警告", message="确认关闭防火墙 ？")
 def detection_warning():
     sec_mx2 = showwarning(title="警告", message="确认防火墙开启仅监控模式 ？\n此模式下不会阻断任何数据")
+    srbl_action.set(2)
+    srpl_action.set(2)
 
 SecEngine = tk.PanedWindow(frame, width=460, height=35)
 leftPane = tk.PanedWindow(SecEngine, width=200, height=35)
@@ -72,12 +75,6 @@ def request_close():
     variable_SecArgumentsLimit.set("--关闭--")
     SecArgumentsLimitEntry['state'] = 'disable'
 
-    variable_SecPcreMatchLimit.set("--关闭--")
-    SecPcreMatchLimitEntry['state'] = 'disable'
-
-    variable_SecPcreMatchLimitRecursion.set("--关闭--")
-    SecPcreMatchLimitRecursionEntry['state'] = 'disable'
-
 
 def request_open():
     variable_SecRequestBodyLimit.set("13107200")
@@ -95,12 +92,6 @@ def request_open():
 
     variable_SecArgumentsLimit.set("1000")
     SecArgumentsLimitEntry['state'] = 'normal'
-
-    variable_SecPcreMatchLimit.set("1000")
-    SecPcreMatchLimitEntry['state'] = 'normal'
-
-    variable_SecPcreMatchLimitRecursion.set("1000")
-    SecPcreMatchLimitRecursionEntry['state'] = 'normal'
 
 
 SecRequestBodyAccess = tk.PanedWindow(frame, width=460, height=35)
@@ -189,39 +180,6 @@ SecArgumentsLimit.add(leftPane)
 SecArgumentsLimit.add(rightPane)
 leftPane.add(SecArgumentsLimitLabel)
 rightPane.add(SecArgumentsLimitEntry, padx=20, pady=5)
-
-# PCRE库匹配限制
-def help_pcre():
-    pcre_mx = showinfo(title="PCRE库匹配限制说明", message="用于防止潜在的基于正则匹配的DOS攻击")
-SecPcreMatchLimit = tk.PanedWindow(frame, width=460, height=35)
-leftPane = tk.PanedWindow(SecPcreMatchLimit, width=200, height=35)
-rightPane = tk.PanedWindow(SecPcreMatchLimit, width=260, height=35)
-btnHelpPCRE = tk.Button(frame, image=help_img, command=help_pcre)
-SecPcreMatchLimitLabel = tk.Label(text="PCRE库匹配限制")
-variable_SecPcreMatchLimit = tk.StringVar()
-variable_SecPcreMatchLimit.set("1000")
-SecPcreMatchLimitEntry = tk.Entry(frame, text=variable_SecPcreMatchLimit)
-SecPcreMatchLimit.grid()
-SecPcreMatchLimit.add(leftPane, padx=35, width=130, sticky='e')
-SecPcreMatchLimit.add(rightPane)
-leftPane.add(SecPcreMatchLimitLabel)
-leftPane.add(btnHelpPCRE, width=23, height=23, sticky='w')
-rightPane.add(SecPcreMatchLimitEntry, padx=20, pady=5)
-
-# PCRE库匹配递归限制
-SecPcreMatchLimitRecursion = tk.PanedWindow(frame, width=460, height=35)
-leftPane = tk.PanedWindow(SecPcreMatchLimitRecursion, width=200, height=35)
-rightPane = tk.PanedWindow(SecPcreMatchLimitRecursion, width=260, height=35)
-SecPcreMatchLimitRecursionLabel = tk.Label(text="PCRE库匹配递归限制")
-variable_SecPcreMatchLimitRecursion = tk.StringVar()
-variable_SecPcreMatchLimitRecursion.set("1000")
-SecPcreMatchLimitRecursionEntry = tk.Entry(frame, text=variable_SecPcreMatchLimitRecursion)
-SecPcreMatchLimitRecursion.grid()
-SecPcreMatchLimitRecursion.add(leftPane)
-SecPcreMatchLimitRecursion.add(rightPane)
-leftPane.add(SecPcreMatchLimitRecursionLabel)
-rightPane.add(SecPcreMatchLimitRecursionEntry, padx=20, pady=5)
-
 
 
 '''-- Response body handling --'''
@@ -324,52 +282,8 @@ rightPane.add(SecResponseBodyLimitActionEntry1)
 rightPane.add(SecResponseBodyLimitActionEntry2)
 
 
-
-'''-- Filesystem configuration --'''
-FILESYSTEM_Boundary = tk.PanedWindow(frame, width=460, height=40)
-FILESYSTEMLabel = tk.Label(text="*** 文件系统配置 ***")
-FILESYSTEM_Boundary.grid()
-FILESYSTEM_Boundary.add(FILESYSTEMLabel)
-
-# 临时文件目录
-def help_tmp():
-    tmp_mx = showinfo(title="临时文件说明", message="用于存储数据处理过程中的临时文件，例如超出限制大小的上传文件。\n默认为/tmp，但更理想的选择是专门指定的private权限目录")
-SecTmpDir = tk.PanedWindow(frame, width=460, height=35)
-leftPane = tk.PanedWindow(SecTmpDir, width=200, height=35)
-rightPane = tk.PanedWindow(SecTmpDir, width=260, height=35)
-btnHelpTmpDir = tk.Button(frame, image=help_img, command=help_tmp)
-SecTmpDirLabel = tk.Label(text="临时文件目录")
-SecTmpDirEntry = tk.Entry(frame)
-SecTmpDirEntry.insert(0, "/tmp/")
-SecTmpDir.grid()
-SecTmpDir.add(leftPane, padx=35, width=130, sticky='e')
-SecTmpDir.add(rightPane)
-leftPane.add(SecTmpDirLabel)
-leftPane.add(btnHelpTmpDir, width=23, height=23, sticky='w')
-rightPane.add(SecTmpDirEntry, padx=20, pady=5)
-
-
-# 持久性文件目录
-def help_data():
-    tmp_mx = showinfo(title="持久文件说明", message="ModSecurity存放持久化数据（如ip 地址数据，session 数据等）路径，initcol、setsid和setuid需要用到这个指令")
-SecDataDir = tk.PanedWindow(frame, width=460, height=35)
-leftPane = tk.PanedWindow(SecDataDir, width=200, height=35)
-rightPane = tk.PanedWindow(SecDataDir, width=260, height=35)
-btnHelpTmpDir = tk.Button(frame, image=help_img, command=help_data)
-SecDataDirLabel = tk.Label(text="持久文件目录")
-SecDataDirEntry = tk.Entry(frame)
-SecDataDirEntry.insert(0, "/tmp/")
-SecDataDir.grid()
-SecDataDir.add(leftPane, padx=35, width=130, sticky='e')
-SecDataDir.add(rightPane)
-leftPane.add(SecDataDirLabel)
-leftPane.add(btnHelpTmpDir, width=23, height=23, sticky='w')
-rightPane.add(SecDataDirEntry, padx=20, pady=5)
-
-
-
 '''-- File uploads handling configuration --'''
-FILEUPLOAD_Boundary = tk.PanedWindow(frame, width=600, height=40)
+FILEUPLOAD_Boundary = tk.PanedWindow(frame, width=460, height=40)
 FILEUPLOADLabel = tk.Label(text="*** 文件上传配置 ***")
 FILEUPLOAD_Boundary.grid()
 FILEUPLOAD_Boundary.add(FILEUPLOADLabel)
@@ -630,7 +544,7 @@ def audit_relevant():
     variable_SecAuditLogRelevantStatus.set("\"^(?:5|4(?!04))\"")
 
     SecAuditLogPartsEntry['state'] = 'normal'
-    variable_SecAuditLogParts.set("ABIJDEFHZ")
+    variable_SecAuditLogParts.set("ABCJEFHZ")
 
     SecAuditLogTypeEntry1['state'] = 'normal'
     SecAuditLogTypeEntry2['state'] = 'normal'
@@ -640,12 +554,12 @@ def audit_relevant():
     fileordir.set("/var/log/modsec_audit.log")
 
 def audit_open():
-    showinfo(title="提示", message="此选项下会记录所有事务，适用于调试")
-    SecAuditLogRelevantStatusEntry['state'] = 'normal'
-    variable_SecAuditLogRelevantStatus.set("\"^(?:5|4(?!04))\"")
+    showinfo(title="提示", message="此选项下会记录所有事务，占用磁盘空间较大，一般仅适用于调试")
+    SecAuditLogRelevantStatusEntry['state'] = 'disable'
+    variable_SecAuditLogRelevantStatus.set("--关闭--")
 
     SecAuditLogPartsEntry['state'] = 'normal'
-    variable_SecAuditLogParts.set("ABIJDEFHZ")
+    variable_SecAuditLogParts.set("ABCJEFHZ")
 
     SecAuditLogTypeEntry1['state'] = 'normal'
     SecAuditLogTypeEntry2['state'] = 'normal'
@@ -673,17 +587,21 @@ rightPane.add(SecAuditEngineEntry2)
 rightPane.add(SecAuditEngineEntry3)
 
 # 事务状态记录规则
+def helpAuditLogStatus():
+    showinfo(title="事务状态记录规则说明", message="使用正则表达式规则编写，符合该规则的事务状态会纳入到审计记录中。\n如\"^(?:5|4(?!04))\"的正则表达式表示除404之外5xx和4xx的事务。")
 SecAuditLogRelevantStatus = tk.PanedWindow(frame, width=460, height=35)
-leftPane = tk.PanedWindow(SecAuditLogRelevantStatus, width=200, height=35)
-rightPane = tk.PanedWindow(SecAuditLogRelevantStatus, width=260, height=35)
+leftPane = tk.PanedWindow(SecAuditLogRelevantStatus, width=120, height=35)
+rightPane = tk.PanedWindow(SecAuditLogRelevantStatus, width=340, height=35)
 SecAuditLogRelevantStatusLabel = tk.Label(text="事务状态记录规则")
 variable_SecAuditLogRelevantStatus = tk.StringVar()
 variable_SecAuditLogRelevantStatus.set("\"^(?:5|4(?!04))\"")
+btnHelpAuditLogStatus = tk.Button(frame, image=help_img, command=helpAuditLogStatus)
 SecAuditLogRelevantStatusEntry = tk.Entry(frame, text=variable_SecAuditLogRelevantStatus)
 SecAuditLogRelevantStatus.grid()
-SecAuditLogRelevantStatus.add(leftPane)
-SecAuditLogRelevantStatus.add(rightPane)
+SecAuditLogRelevantStatus.add(leftPane, padx=30, width=139, sticky='e')
+SecAuditLogRelevantStatus.add(rightPane, padx=1, width=300, height=35, sticky='es')
 leftPane.add(SecAuditLogRelevantStatusLabel)
+leftPane.add(btnHelpAuditLogStatus, width=23, height=23, sticky='w')
 rightPane.add(SecAuditLogRelevantStatusEntry, padx=20, pady=5)
 
 # 日志记录内容
@@ -701,9 +619,9 @@ E -- 中间人响应体(需开启响应体限制)\n\n\
 F -- 最终响应头\n\n\
 G -- 响应体(暂未实现)\n\n\
 H -- 审计跟踪\n\n\
-I -- C部分的替换,在使用multipart/form-data编码时会记录与C相同的数据。\n但application/x-www-form-urlencoded情况下仅记录参数和假的文件体而不包含文件。\n该选项用于处理不想保存(过大)上传文件于审计日志中的情况\n\n\
+I -- C部分的替换,在使用multipart/form-data编码时会记录与C相同的数据。\n但application/x-www-form-urlencoded情况下仅记录参数和假的文件体而不包含文件。\n该选项用于处理不想保存(过大)上传文件于审计日志中的情况(暂未实现)\n\n\
 J -- 文件使用multipart/form-data编码上传的信息\n\n\
-K -- 包含其匹配的触发规则列表\n\n\
+K -- 包含其匹配的触发规则列表(暂未实现)\n\n\
 Z -- 最终分界，意味条目的最后(强制)\n")
     helpText.config(state=tk.DISABLED)
 
@@ -713,7 +631,7 @@ leftPane = tk.PanedWindow(SecAuditLogParts, width=120, height=35)
 rightPane = tk.PanedWindow(SecAuditLogParts, width=340, height=35)
 SecAuditLogPartsLabel = tk.Label(text="日志记录内容")
 variable_SecAuditLogParts = tk.StringVar()
-variable_SecAuditLogParts.set("ABIJDEFHZ")
+variable_SecAuditLogParts.set("ABCJEFHZ")
 SecAuditLogPartsEntry = tk.Entry(frame, text=variable_SecAuditLogParts)
 btnHelpAuditLog = tk.Button(frame, image=help_img, command=helpAuditLogParts)
 SecAuditLogParts.grid()
@@ -765,7 +683,7 @@ rightPane = tk.PanedWindow(SecAuditLog, width=260, height=35)
 SecAuditLogLabel = tk.Label(text="日志保存文件位置")
 fileordir.set("/var/log/modsec_audit.log")
 SecAuditLogEntry = tk.Entry(frame, textvariable=fileordir)
-SecAuditLog.grid(row=33)
+SecAuditLog.grid()
 SecAuditLog.add(leftPane)
 SecAuditLog.add(rightPane)
 leftPane.add(SecAuditLogLabel)
@@ -777,18 +695,65 @@ SECRULELabel = tk.Label(text="*** 自定义规则设置 ***")
 SECRULE_Boundary.grid()
 SECRULE_Boundary.add(SECRULELabel)
 
+# 自定义规则开启
+def sre_open():
+    SecRuleEntry['state'] = "normal"
+def sre_close():
+    SecRuleEntry['state'] = "disable"
+def sre_detection():
+    SecRuleEntry['state'] = "normal"
+    showinfo(title="自定义规则仅监控模式", message="该选项下不会执行任何规则中的阻断操作(如 block,deny,drop,allow,proxy,redirect)")
+SecRuleEngine = tk.PanedWindow(frame, width=460, height=35)
+leftPane = tk.PanedWindow(SecRuleEngine, width=200, height=35)
+rightPane = tk.PanedWindow(SecRuleEngine, width=260, height=35)
+SecRuleEngineLabel = tk.Label(text="开启自定义规则")
+sre_model = tk.IntVar()
+SecRuleEngineEntry1 = tk.Radiobutton(frame, text='开启', value=1, variable=sre_model, command=sre_open)
+SecRuleEngineEntry2 = tk.Radiobutton(frame, text='仅监控', value=2, variable=sre_model, command=sre_detection)
+SecRuleEngineEntry3 = tk.Radiobutton(frame, text='关闭', value=3, variable=sre_model, command=sre_close)
+sre_model.set(3)
+SecRuleEngine.grid()
+SecRuleEngine.add(leftPane)
+SecRuleEngine.add(rightPane)
+leftPane.add(SecRuleEngineLabel)
+rightPane.add(SecRuleEngineEntry1)
+rightPane.add(SecRuleEngineEntry2)
+rightPane.add(SecRuleEngineEntry3)
+
 # 自定义规则
-SecRule = tk.PanedWindow(frame, width=460, height=35)
-leftPane = tk.PanedWindow(SecRule, width=200, height=35)
-rightPane = tk.PanedWindow(SecRule, width=260, height=35)
-SecRuleLabel = tk.Label(text="自定义规则")
-SecRuleEntry = tk.Entry(frame)
+def helpSecRule():
+    newWindow = tk.Toplevel(window)
+    newWindow.geometry("600x400")
+    newWindow.title("日志记录内容说明")
+    helpText = tk.Text(newWindow, width=600, height=300, undo=True, padx=20, pady=20, relief=tk.FLAT)
+    helpText.pack()
+    helpText.insert(tk.INSERT, "基础语法：SecRule VARIABLES OPERATOR [ACTIONS] \n\n"
+                               "VARIABLES:\n"
+                               "ARGS,ARGS_GET,ARGS_POST,FILES,FULL_REQUEST_QUERY_STRING,REQUEST_BODY,REQUEST_HEADERS,REQUEST_MATHOD,REQUEST_URI\n\n"
+                               "OPERATOR:\n"
+                               "@rx,@eq,@ge,@gt,@le,@lt\n\n"
+                               "ACTIONS:\n"
+                               "allow,ms,gid,rev,severity,log,deny,block,status,phase,t,skip,chain\n\n"
+                               "TRANSFORMATION FUNCTIONS:\n"
+                               "lowercase,urlDecode,none,compressWhitespace,removeWhitespace,replaceNulls,removeNulls\n\n"
+                               "PHASES:\n"
+                               "phase:1 - Request headers stage\nphase:2 - Request body stage\nphase:3 - Response headers stage\nphase:4 - Response body stage\n\n"
+                               "更多语法细节参考：https://github.com/SpiderLabs/ModSecurity/wiki/Reference-Manual-%28v2.x%29-%28Split%29#processing-phases")
+    helpText.config(state=tk.DISABLED)
+SecRule = tk.PanedWindow(frame, width=460, height=60)
+leftPane = tk.PanedWindow(SecRule, width=200, height=60)
+rightPane = tk.PanedWindow(SecRule, width=260, height=60)
+SecRuleLabel = tk.Label(text="自定义规则\n(每条规则占一行)")
+SecRuleEntry = tk.Text(frame)
+btnHelpSecRules = tk.Button(frame, image=help_img, command=helpSecRule)
 SecRule.grid()
-SecRule.add(leftPane)
+SecRule.add(leftPane, padx=36, width=130)
 SecRule.add(rightPane)
 leftPane.add(SecRuleLabel)
+leftPane.add(btnHelpSecRules, width=23, height=23, sticky='w')
 rightPane.add(SecRuleEntry, padx=20, pady=5)
 
+sre_close()
 
 
 def getInput():
@@ -848,20 +813,6 @@ def getInput():
             input = content + option + "\n\n"
             f.writelines(input)
 
-            '''SecPcreMatchLimit '''
-            SecPcreMatchLimit = SecPcreMatchLimitEntry.get()
-            content = "SecPcreMatchLimit "
-            option = SecPcreMatchLimit
-            input = content + option + "\n\n"
-            f.writelines(input)
-
-            '''SecPcreMatchLimitRecursion'''
-            SecPcreMatchLimitRecursion = SecPcreMatchLimitRecursionEntry.get()
-            content = "SecPcreMatchLimitRecursion "
-            option = SecPcreMatchLimitRecursion
-            input = content + option + "\n\n"
-            f.writelines(input)
-
         '''SecResponseBodyAccess'''
         SecResponseBodyAccess = srp_open.get()
         content = "SecResponseBodyAccess "
@@ -906,20 +857,6 @@ def getInput():
                 option = "ProcessPartial"
             input = content + option + "\n\n"
             f.writelines(input)
-
-        '''SecTmpDir'''
-        SecTmpDir = SecTmpDirEntry.get()
-        content = "SecTmpDir "
-        option = SecTmpDir
-        input = content + option + "\n\n"
-        f.writelines(input)
-
-        '''SecDataDir'''
-        SecDataDir = SecDataDirEntry.get()
-        content = "SecDataDir "
-        option = SecDataDir
-        input = content + option + "\n\n"
-        f.writelines(input)
 
         '''SecUploadAccess'''
         if sfu_open.get() == 1:
@@ -978,12 +915,13 @@ def getInput():
         f.writelines(input)
 
         if SecAuditEngine == 1 or SecAuditEngine == 2:
-            '''SecAuditLogRelevantStatus'''
-            SecAuditLogRelevantStatus = SecAuditLogRelevantStatusEntry.get()
-            content = "SecAuditLogRelevantStatus "
-            option = SecAuditLogRelevantStatus
-            input = content + option + "\n\n"
-            f.writelines(input)
+            if SecAuditEngine == 1:
+                '''SecAuditLogRelevantStatus'''
+                SecAuditLogRelevantStatus = SecAuditLogRelevantStatusEntry.get()
+                content = "SecAuditLogRelevantStatus "
+                option = SecAuditLogRelevantStatus
+                input = content + option + "\n\n"
+                f.writelines(input)
 
             '''SecAuditLogParts'''
             SecAuditLogParts = SecAuditLogPartsEntry.get()
@@ -1012,17 +950,24 @@ def getInput():
             input = content + option + "\n\n"
             f.writelines(input)
 
-        '''SecRule'''
-        SecRule = SecRuleEntry.get()
-        if SecRule != "":
-            content = "SecRule "
-            option = SecRule
-            input = content + option + "\n\n"
-            f.writelines(input)
+        '''SecRuleEngine'''
+        SecRuleEngine = sre_model.get()
+        if SecRuleEngine == 1 or SecRuleEngine == 2:
+            '''SecRule'''
+            SecRules = SecRuleEntry.get("1.0","end")
+            if SecRules != "":
+                for line in SecRules:
+                    f.writelines(line)
 
 
 btnOutput = tk.Button(frame, height=1, width=10, text="OUTPUT", command=getInput, font=("Times", 10, "bold"))
 btnOutput.grid(pady=50)
+
+moreInfoLabel = tk.Label(frame, height=1, width=10, text="更多参考手册", font=('Arial', 9, 'underline'), cursor="hand2")
+moreInfoLabel.grid()
+def open_url(event):
+    webbrowser.open("https://github.com/SpiderLabs/ModSecurity/wiki/Reference-Manual-%28v3.x%29", new=0)
+moreInfoLabel.bind("<Button-1>", open_url)
 
 frame.update()
 canvas.configure(yscrollcommand=scroll.set, scrollregion=canvas.bbox("all"))
