@@ -236,7 +236,7 @@ rightPane.add(SecResponseBodyAccessEntry2)
 SecResponseBodyMimeType = tk.PanedWindow(frame, width=460, height=35)
 leftPane = tk.PanedWindow(SecResponseBodyMimeType, width=200, height=35)
 rightPane = tk.PanedWindow(SecResponseBodyMimeType, width=260, height=35)
-SecResponseBodyMimeTypeLabel = tk.Label(text="响应体的资源类型")
+SecResponseBodyMimeTypeLabel = tk.Label(text="何种资源类型的响应体")
 cb_plain = tk.StringVar(value="text/plain")
 cb_html = tk.StringVar(value="text/html")
 cb_xml = tk.StringVar(value="text/xml")
@@ -294,43 +294,32 @@ def upload_close():
     variable_SecUploadDir.set("--关闭--")
     SecUploadDirEntry['state'] = 'disable'
 
-    sukf_model.set(0)
-    SecUploadKeepFilesEntry1['state'] = 'disable'
-    SecUploadKeepFilesEntry2['state'] = 'disable'
-    SecUploadKeepFilesEntry3['state'] = 'disable'
-
     variable_SecUploadFileMode.set("--关闭--")
     SecUploadFileModeEntry['state'] = 'disable'
 
 def upload_open():
-    dbg_mx = showwarning(title="文件上传拦截说明",
-                      message="文件上传配置可对用户上传文件进行拦截保存操作")
     variable_SecUploadDir.set("/opt/modsecurity/var/upload/")
     SecUploadDirEntry['state'] = 'normal'
-
-    sukf_model.set(1)
-    SecUploadKeepFilesEntry1['state'] = 'normal'
-    SecUploadKeepFilesEntry2['state'] = 'normal'
-    SecUploadKeepFilesEntry3['state'] = 'normal'
 
     variable_SecUploadFileMode.set("0600")
     SecUploadFileModeEntry['state'] = 'normal'
 
 
-SecFileUploadAccess = tk.PanedWindow(frame, width=460, height=35)
-leftPane = tk.PanedWindow(SecFileUploadAccess, width=200, height=35)
-rightPane = tk.PanedWindow(SecFileUploadAccess, width=260, height=35)
-SecFileUploadAccessLabel = tk.Label(text="开启上传文件配置")
-sfu_open = tk.IntVar()
-SecFileUploadAccessEntry1 = tk.Radiobutton(frame, text='开启', value=1, variable=sfu_open, command=upload_open)
-SecFileUploadAccessEntry2 = tk.Radiobutton(frame, text='关闭', value=2, variable=sfu_open, command=upload_close)
-sfu_open.set(2)
-SecFileUploadAccess.grid()
-SecFileUploadAccess.add(leftPane)
-SecFileUploadAccess.add(rightPane)
-leftPane.add(SecFileUploadAccessLabel)
-rightPane.add(SecFileUploadAccessEntry1)
-rightPane.add(SecFileUploadAccessEntry2)
+# 是否保存上传文件
+SecUploadKeepFiles = tk.PanedWindow(frame, width=460, height=35)
+leftPane = tk.PanedWindow(SecUploadKeepFiles, width=200, height=35)
+rightPane = tk.PanedWindow(SecUploadKeepFiles, width=260, height=35)
+SecUploadKeepFilesLabel = tk.Label(text="是否保存上传文件")
+sukf_model = tk.IntVar()
+SecUploadKeepFilesEntry1 = tk.Radiobutton(frame, text='开启', value=1, variable=sukf_model, command=upload_open)
+SecUploadKeepFilesEntry2 = tk.Radiobutton(frame, text='关闭', value=2, variable=sukf_model, command=upload_close)
+sukf_model.set(2)
+SecUploadKeepFiles.grid()
+SecUploadKeepFiles.add(leftPane)
+SecUploadKeepFiles.add(rightPane)
+leftPane.add(SecUploadKeepFilesLabel)
+rightPane.add(SecUploadKeepFilesEntry1)
+rightPane.add(SecUploadKeepFilesEntry2)
 
 # 拦截文件存放目录
 def help_uploadfile():
@@ -349,30 +338,6 @@ SecUploadDir.add(rightPane)
 leftPane.add(SecUploadDirLabel)
 leftPane.add(btnHelpUploadFile, width=23, height=23, sticky='w')
 rightPane.add(SecUploadDirEntry, padx=20, pady=5)
-
-# 选择保存文件类型
-def warning_uploadclose():
-    upcl_mx = showwarning(title="提示", message="此选择下将不会保存事务处理后的拦截文件，在事务处理完成后会自动删除")
-def warning_upoloadon():
-    upon_mx = showwarning(title="提示", message="此选择下将会保存所有用户上传文件，注意可能引起的磁盘占用问题")
-def warning_upoloadrelevant():
-    upre_mx = showwarning(title="提示", message="此选择下仅会保存可疑请求下的上传文件")
-SecUploadKeepFiles = tk.PanedWindow(frame, width=460, height=35)
-leftPane = tk.PanedWindow(SecUploadKeepFiles, width=200, height=35)
-rightPane = tk.PanedWindow(SecUploadKeepFiles, width=260, height=35)
-SecUploadKeepFilesLabel = tk.Label(text="是否保存上传文件")
-sukf_model = tk.IntVar()
-SecUploadKeepFilesEntry1 = tk.Radiobutton(frame, text='仅相关', value=1, variable=sukf_model, command=warning_upoloadrelevant)
-SecUploadKeepFilesEntry2 = tk.Radiobutton(frame, text='全部', value=2, variable=sukf_model, command=warning_upoloadon)
-SecUploadKeepFilesEntry3 = tk.Radiobutton(frame, text='关闭', value=3, variable=sukf_model, command=warning_uploadclose)
-sukf_model.set(1)
-SecUploadKeepFiles.grid()
-SecUploadKeepFiles.add(leftPane)
-SecUploadKeepFiles.add(rightPane)
-leftPane.add(SecUploadKeepFilesLabel)
-rightPane.add(SecUploadKeepFilesEntry1)
-rightPane.add(SecUploadKeepFilesEntry2)
-rightPane.add(SecUploadKeepFilesEntry3)
 
 # 配置上传文件权限模式
 def help_auth():
@@ -456,7 +421,7 @@ leftPane = tk.PanedWindow(SecDebugLog, width=200, height=35)
 rightPane = tk.PanedWindow(SecDebugLog, width=260, height=35)
 SecDebugLogLabel = tk.Label(text="调试日志保存位置")
 variable_SecDebugLog = tk.StringVar()
-variable_SecDebugLog.set("/opt/modsecurity/var/log/debug.log")
+variable_SecDebugLog.set("/var/log/modsec_debug.log")
 SecDebugLogEntry = tk.Entry(frame, text=variable_SecDebugLog)
 SecDebugLog.grid()
 SecDebugLog.add(leftPane)
@@ -645,20 +610,14 @@ rightPane.add(SecAuditLogPartsEntry)
 # 针对不同机制修改保存位置为文件或目录
 fileordir = tk.StringVar()
 
-
 def changeStroageToFile():
     showinfo(title="Serial", message="此种情况下全部记录会存于一个文件中，便于简单使用，但会由于日志输入的争用导致降低服务器性能")
     SecAuditLogLabel['text'] = "日志保存文件位置"
     fileordir.set("/var/log/modsec_audit.log")
-
-
-
 def changeStorageToDir():
     showinfo(title="Concurrent", message="为每件事务单独创建日志记录文件，依时间分类。面对大规模日志需求下能够具备更好的扩展性(多项事务可并行记录)，同时也是远程记录时的唯一选择")
     SecAuditLogLabel['text'] = "日志保存目录位置"
     fileordir.set("/opt/modsecurity/var/audit/")
-
-
 
 SecAuditLogType = tk.PanedWindow(frame, width=460, height=35)
 leftPane = tk.PanedWindow(SecAuditLogType, width=200, height=35)
@@ -689,6 +648,24 @@ SecAuditLog.add(rightPane)
 leftPane.add(SecAuditLogLabel)
 rightPane.add(SecAuditLogEntry, padx=20, pady=5)
 
+# 日志记录格式
+def json_tips():
+    showwarning(title="JSON格式注意事项", message="该选项仅适用于在编译阶段通过包含YAJL库以支持JSON数据格式的ModSecurity")
+SecAuditLogFormat = tk.PanedWindow(frame, width=460, height=35)
+leftPane = tk.PanedWindow(SecAuditLogFormat, width=200, height=35)
+rightPane = tk.PanedWindow(SecAuditLogFormat, width=260, height=35)
+SecAuditLogFormatLabel = tk.Label(text="日志记录格式")
+salf_model = tk.IntVar()
+SecAuditLogFormatEntry1 = tk.Radiobutton(frame, text='Native', value=1, variable=salf_model)
+SecAuditLogFormatEntry2 = tk.Radiobutton(frame, text='JSON', value=2, variable=salf_model, command=json_tips)
+salf_model.set(1)
+SecAuditLogFormat.grid()
+SecAuditLogFormat.add(leftPane)
+SecAuditLogFormat.add(rightPane)
+leftPane.add(SecAuditLogFormatLabel)
+rightPane.add(SecAuditLogFormatEntry1)
+rightPane.add(SecAuditLogFormatEntry2)
+
 '''-- SecRule configuration --'''
 SECRULE_Boundary = tk.PanedWindow(frame, width=460, height=40)
 SECRULELabel = tk.Label(text="*** 自定义规则设置 ***")
@@ -698,10 +675,16 @@ SECRULE_Boundary.add(SECRULELabel)
 # 自定义规则开启
 def sre_open():
     SecRuleEntry['state'] = "normal"
+    SecRuleEntry.delete("1.0", "end")
+    DefaultSecRulesEntry['state'] = 'normal'
 def sre_close():
+    SecRuleEntry.insert(tk.INSERT, "--关闭--")
     SecRuleEntry['state'] = "disable"
+    DefaultSecRulesEntry['state'] = 'disable'
 def sre_detection():
     SecRuleEntry['state'] = "normal"
+    SecRuleEntry.delete("1.0", "end")
+    DefaultSecRulesEntry['state'] = 'normal'
     showinfo(title="自定义规则仅监控模式", message="该选项下不会执行任何规则中的阻断操作(如 block,deny,drop,allow,proxy,redirect)")
 SecRuleEngine = tk.PanedWindow(frame, width=460, height=35)
 leftPane = tk.PanedWindow(SecRuleEngine, width=200, height=35)
@@ -719,6 +702,29 @@ leftPane.add(SecRuleEngineLabel)
 rightPane.add(SecRuleEngineEntry1)
 rightPane.add(SecRuleEngineEntry2)
 rightPane.add(SecRuleEngineEntry3)
+
+# 默认推荐SecRules规则配置
+def defaultRules():
+    newWindow = tk.Toplevel(window)
+    newWindow.geometry("600x400")
+    newWindow.title("默认推荐规则内容")
+    helpText = tk.Text(newWindow, width=600, height=300, undo=True, padx=20, pady=20, relief=tk.FLAT)
+    helpText.pack()
+    helpText.insert(tk.INSERT, "默认推荐规则包含以下条目：\n")
+    helpText.config(state=tk.DISABLED)
+DefaultSecRules = tk.PanedWindow(frame, width=460, height=35)
+leftPane = tk.PanedWindow(DefaultSecRules, width=200, height=35)
+rightPane = tk.PanedWindow(DefaultSecRules, width=260, height=35)
+DefaultSecRulesLabel = tk.Label(text="是否配置SecRule默认推荐规则")
+btnDefaultRules = tk.Button(frame, image=help_img, command=defaultRules)
+default_rule_check = tk.IntVar(value=1)
+DefaultSecRulesEntry = tk.Checkbutton(frame, text='是', variable=default_rule_check)
+DefaultSecRules.grid()
+DefaultSecRules.add(leftPane)
+DefaultSecRules.add(rightPane)
+leftPane.add(DefaultSecRulesLabel)
+leftPane.add(btnDefaultRules, width=23, height=23, sticky='w')
+rightPane.add(DefaultSecRulesEntry)
 
 # 自定义规则
 def helpSecRule():
@@ -756,8 +762,46 @@ rightPane.add(SecRuleEntry, padx=20, pady=5)
 sre_close()
 
 
+'''-- Miscellaneous  --'''
+MISC_Boundary = tk.PanedWindow(frame, width=460, height=40)
+MISCLabel = tk.Label(text="*** Miscellaneous ***")
+MISC_Boundary.grid()
+MISC_Boundary.add(MISCLabel)
+
+# 参数分隔符
+SecArgumentSeparator = tk.PanedWindow(frame, width=460, height=35)
+leftPane = tk.PanedWindow(SecArgumentSeparator, width=200, height=35)
+rightPane = tk.PanedWindow(SecArgumentSeparator, width=260, height=35)
+SecArgumentSeparatorLabel = tk.Label(text="参数分隔符")
+variable_SecArgumentSeparator = tk.StringVar()
+variable_SecArgumentSeparator.set("&")
+SecArgumentSeparatorEntry = tk.Entry(frame, textvariable=variable_SecArgumentSeparator)
+SecArgumentSeparator.grid()
+SecArgumentSeparator.add(leftPane)
+SecArgumentSeparator.add(rightPane)
+leftPane.add(SecArgumentSeparatorLabel)
+rightPane.add(SecArgumentSeparatorEntry, padx=20, pady=5)
+
+# 指定Unicode的Code Point
+SecUnicodeMapFile = tk.PanedWindow(frame, width=460, height=35)
+leftPane = tk.PanedWindow(SecUnicodeMapFile, width=200, height=35)
+rightPane = tk.PanedWindow(SecUnicodeMapFile, width=260, height=35)
+SecUnicodeMapFileLabel = tk.Label(text="Unicode Mapping位置\n及指定Code Point")
+variable_SecUnicodeMapFile = tk.StringVar()
+variable_SecUnicodeMapFile.set("unicode.mapping 20127")
+SecUnicodeMapFileEntry = tk.Entry(frame, textvariable=variable_SecUnicodeMapFile)
+SecUnicodeMapFile.grid()
+SecUnicodeMapFile.add(leftPane)
+SecUnicodeMapFile.add(rightPane)
+leftPane.add(SecUnicodeMapFileLabel)
+rightPane.add(SecUnicodeMapFileEntry, padx=20, pady=5)
+
+
 def getInput():
     with open("ModSecurity.conf", "w+") as f:
+        flist = []
+        errortip = 0
+        error_mx = ""
 
         '''SecEngine'''
         SecEngine = se_model.get()
@@ -769,7 +813,7 @@ def getInput():
         elif SecEngine == 3:
             option = "Off"
         input = content + option + "\n\n"
-        f.writelines(input)
+        flist.append(input)
 
         '''SecRequestBodyAccess'''
         SecRequestBodyAccess = sra_open.get()
@@ -779,22 +823,24 @@ def getInput():
         elif SecRequestBodyAccess == 2:
             option = "Off"
         input = content + option + "\n\n"
-        f.writelines(input)
+        flist.append(input)
 
         if SecRequestBodyAccess == 1:
             '''SecRequestBodyLimit'''
             SecRequestBodyLimit = SecRequestBodyLimitEntry.get()
-            content = "SecRequestBodyLimit "
-            option = SecRequestBodyLimit
-            input = content + option + "\n\n"
-            f.writelines(input)
+            if SecRequestBodyLimit != "":
+                content = "SecRequestBodyLimit "
+                option = SecRequestBodyLimit
+                input = content + option + "\n\n"
+                flist.append(input)
 
             '''SecRequestBodyNoFilesLimit'''
             SecRequestBodyNoFilesLimit = SecRequestBodyNoFilesLimitEntry.get()
-            content = "SecRequestBodyNoFilesLimit "
-            option = SecRequestBodyNoFilesLimit
-            input = content + option + "\n\n"
-            f.writelines(input)
+            if SecRequestBodyNoFilesLimit != "":
+                content = "SecRequestBodyNoFilesLimit "
+                option = SecRequestBodyNoFilesLimit
+                input = content + option + "\n\n"
+                flist.append(input)
 
             '''SecRequestBodyLimitAction '''
             SecRequestBodyLimitAction = srbl_action.get()
@@ -804,14 +850,23 @@ def getInput():
             elif SecRequestBodyLimitAction == 2:
                 option = "ProcessPartial"
             input = content + option + "\n\n"
-            f.writelines(input)
+            flist.append(input)
 
             '''SecRequestBodyJsonDepthLimit'''
             SecRequestBodyJsonDepthLimit = SecRequestBodyJsonDepthLimitEntry.get()
-            content = "SecRequestBodyJsonDepthLimit "
-            option = SecRequestBodyJsonDepthLimit
-            input = content + option + "\n\n"
-            f.writelines(input)
+            if SecRequestBodyJsonDepthLimit != "":
+                content = "SecRequestBodyJsonDepthLimit "
+                option = SecRequestBodyJsonDepthLimit
+                input = content + option + "\n\n"
+                flist.append(input)
+
+            '''SecArgumentsLimit'''
+            SecArgumentsLimit = SecArgumentsLimitEntry.get()
+            if SecArgumentsLimit != "":
+                content = "SecArgumentsLimit "
+                option = SecArgumentsLimit
+                input = content + option + "\n\n"
+                flist.append(input)
 
         '''SecResponseBodyAccess'''
         SecResponseBodyAccess = srp_open.get()
@@ -821,7 +876,7 @@ def getInput():
         elif SecResponseBodyAccess == 2:
             option = "Off"
         input = content + option + "\n\n"
-        f.writelines(input)
+        flist.append(input)
 
         if SecResponseBodyAccess == 1:
             '''SecResponseBodyMimeType'''
@@ -838,15 +893,17 @@ def getInput():
                 option += ' '
             if xml != '0':
                 option += xml
-            input = content + option + "\n\n"
-            f.writelines(input)
+            if plain != 0 or html != 0 or xml != 0:
+                input = content + option + "\n\n"
+                flist.append(input)
 
             '''SecResponseBodyLimit'''
             SecResponseBodyLimit = SecResponseBodyLimitEntry.get()
-            content = "SecResponseBodyLimit "
-            option = SecResponseBodyLimit
-            input = content + option + "\n\n"
-            f.writelines(input)
+            if SecResponseBodyLimit != "":
+                content = "SecResponseBodyLimit "
+                option = SecResponseBodyLimit
+                input = content + option + "\n\n"
+                flist.append(input)
 
             '''SecRequestBodyLimitAction '''
             SecResponseBodyLimitAction = srpl_action.get()
@@ -856,35 +913,38 @@ def getInput():
             elif SecResponseBodyLimitAction == 2:
                 option = "ProcessPartial"
             input = content + option + "\n\n"
-            f.writelines(input)
-
-        '''SecUploadAccess'''
-        if sfu_open.get() == 1:
-            '''SecUploadDir'''
-            SecUploadDir = SecUploadDirEntry.get()
-            content = "SecUploadDir "
-            option = SecUploadDir
-            input = content + option + "\n\n"
-            f.writelines(input)
+            flist.append(input)
 
             '''SecUploadKeepFiles'''
             SecUploadKeepFiles = sukf_model.get()
             content = "SecUploadKeepFiles "
             if SecUploadKeepFiles == 1:
-                option = "RelevantOnly"
-            elif SecUploadKeepFiles == 2:
                 option = "On"
-            elif SecUploadKeepFiles == 3:
+            elif SecUploadKeepFiles == 2:
                 option = "Off"
             input = content + option + "\n\n"
-            f.writelines(input)
+            flist.append(input)
 
-            '''SecUploadFileMode'''
-            SecUploadFileMode = SecUploadFileModeEntry.get()
-            content = "SecUploadFileMode "
-            option = SecUploadFileMode
-            input = content + option + "\n\n"
-            f.writelines(input)
+            if SecUploadKeepFiles == 1:
+                '''SecUploadDir'''
+                SecUploadDir = SecUploadDirEntry.get()
+                content = "SecUploadDir "
+                option = SecUploadDir
+                input = content + option + "\n\n"
+                flist.append(input)
+                if SecUploadDir == "":
+                    errortip = 1
+                    error_mx += "请指定上传文件的保存位置\n"
+
+                '''SecUploadFileMode'''
+                SecUploadFileMode = SecUploadFileModeEntry.get()
+                content = "SecUploadFileMode "
+                option = SecUploadFileMode
+                input = content + option + "\n\n"
+                flist.append(input)
+                if SecUploadFileMode == "":
+                    errortip = 1
+                    error_mx += "请指定上传文件的权限模式\n"
 
         '''SecDebugLogAccess'''
         if sdl_open.get() == 1:
@@ -892,15 +952,17 @@ def getInput():
             SecDebugLog = SecDebugLogEntry.get()
             content = "SecDebugLog "
             option = SecDebugLog
+            if SecDebugLog == "":
+                option = "/var/log/modsec_debug.log"
             input = content + option + "\n\n"
-            f.writelines(input)
+            flist.append(input)
 
             '''SecDebugLogLevel'''
             SecDebugLogLevel = sdll_model.get()
             content = "SecDebugLogLevel "
             option = str(SecDebugLogLevel)
             input = content + option + "\n\n"
-            f.writelines(input)
+            flist.append(input)
 
         '''SecAuditEngine'''
         SecAuditEngine = sae_model.get()
@@ -912,23 +974,27 @@ def getInput():
         elif SecAuditEngine == 3:
             option = "Off"
         input = content + option + "\n\n"
-        f.writelines(input)
+        flist.append(input)
 
         if SecAuditEngine == 1 or SecAuditEngine == 2:
             if SecAuditEngine == 1:
                 '''SecAuditLogRelevantStatus'''
                 SecAuditLogRelevantStatus = SecAuditLogRelevantStatusEntry.get()
-                content = "SecAuditLogRelevantStatus "
-                option = SecAuditLogRelevantStatus
-                input = content + option + "\n\n"
-                f.writelines(input)
+                if SecAuditLogRelevantStatus != "":
+                    content = "SecAuditLogRelevantStatus "
+                    option = SecAuditLogRelevantStatus
+                    input = content + option + "\n\n"
+                    flist.append(input)
 
             '''SecAuditLogParts'''
             SecAuditLogParts = SecAuditLogPartsEntry.get()
             content = "SecAuditLogParts "
             option = SecAuditLogParts
             input = content + option + "\n\n"
-            f.writelines(input)
+            flist.append(input)
+            if SecAuditLogParts == "":
+                errortip = 1
+                error_mx += "请指定审计日志的记录内容\n"
 
             '''SecAuditLogType'''
             SecAuditLogType = salt_model.get()
@@ -938,7 +1004,7 @@ def getInput():
             elif SecAuditLogType == 2:
                 option = "Concurrent"
             input = content + option + "\n\n"
-            f.writelines(input)
+            flist.append(input)
 
             '''SecAuditLog or SecAuditLogStorageDir'''
             SecAuditLog = SecAuditLogEntry.get()
@@ -948,16 +1014,88 @@ def getInput():
             elif SecAuditLogType == 2:
                 content = "SecAuditLogStorageDir "
             input = content + option + "\n\n"
-            f.writelines(input)
+            flist.append(input)
+            if SecAuditLog == "":
+                errortip = 1
+                error_mx += "请指定审计日志的保存位置\n"
+
+            '''SecAuditLogFormat'''
+            SecAuditLogFormat = salf_model.get()
+            content = "SecAuditLogFormat "
+            if SecAuditLogFormat == 1:
+                option = "Native"
+            elif SecAuditLogFormat == 2:
+                option = "JSON"
+            input = content + option + "\n\n"
+            flist.append(input)
 
         '''SecRuleEngine'''
         SecRuleEngine = sre_model.get()
         if SecRuleEngine == 1 or SecRuleEngine == 2:
+            '''DefaultSecRules'''
+            DefaultSecRules = default_rule_check.get()
+            print(DefaultSecRules)
+            if DefaultSecRules == 1:
+                input = \
+"""
+SecRule REQUEST_HEADERS:Content-Type "^(?:application(?:/soap\+|/)|text/)xml" \\ \n
+     "id:'200000',phase:1,t:none,t:lowercase,pass,nolog,ctl:requestBodyProcessor=XML"\n
+SecRule REQUEST_HEADERS:Content-Type "^application/json" \\\n
+     "id:'200001',phase:1,t:none,t:lowercase,pass,nolog,ctl:requestBodyProcessor=JSON"\n
+SecRule &ARGS "@ge 1000" \\\n
+"id:'200007', phase:2,t:none,log,deny,status:400,msg:'Failed to fully parse request body due to large argument count',severity:2"\n
+SecRule REQBODY_ERROR "!@eq 0" \\\n
+"id:'200002', phase:2,t:none,log,deny,status:400,msg:'Failed to parse request body.',logdata:'%{reqbody_error_msg}',severity:2"\n
+SecRule MULTIPART_STRICT_ERROR "!@eq 0" \\\n
+"id:'200003',phase:2,t:none,log,deny,status:400, \\\n
+msg:'Multipart request body failed strict validation: \\\n
+PE %{REQBODY_PROCESSOR_ERROR}, \\\n
+BQ %{MULTIPART_BOUNDARY_QUOTED}, \\\n
+BW %{MULTIPART_BOUNDARY_WHITESPACE}, \\\n
+DB %{MULTIPART_DATA_BEFORE}, \\\n
+DA %{MULTIPART_DATA_AFTER}, \\\n
+HF %{MULTIPART_HEADER_FOLDING}, \\\n
+LF %{MULTIPART_LF_LINE}, \\\n
+SM %{MULTIPART_MISSING_SEMICOLON}, \\\n
+IQ %{MULTIPART_INVALID_QUOTING}, \\\n
+IP %{MULTIPART_INVALID_PART}, \\\n
+IH %{MULTIPART_INVALID_HEADER_FOLDING}, \\\n
+FL %{MULTIPART_FILE_LIMIT_EXCEEDED}'"\n
+SecRule MULTIPART_UNMATCHED_BOUNDARY "@eq 1" \\\n
+    "id:'200004',phase:2,t:none,log,deny,msg:'Multipart parser detected a possible unmatched boundary.'"\n
+SecRule TX:/^MSC_/ "!@streq 0" \\\n
+        "id:'200005',phase:2,t:none,deny,msg:'ModSecurity internal error flagged: %{MATCHED_VAR_NAME}'"\n
+"""
+                flist.append(input)
             '''SecRule'''
             SecRules = SecRuleEntry.get("1.0","end")
             if SecRules != "":
                 for line in SecRules:
-                    f.writelines(line)
+                    flist.append(line)
+
+        '''SecArgumentSeparator'''
+        SecArgumentSeparator = SecArgumentSeparatorEntry.get()
+        content = "SecArgumentSeparator "
+        option = SecArgumentSeparator
+        if SecArgumentSeparator == "":
+            option = "&"
+        input = content + option + "\n\n"
+        flist.append(input)
+
+        '''SecUnicodeMapFile'''
+        SecUnicodeMapFile = SecUnicodeMapFileEntry.get()
+        content = "SecUnicodeMapFile "
+        option = SecUnicodeMapFile
+        if SecUnicodeMapFile == "":
+            option = "unicode.mapping 20127"
+        input = content + option + "\n\n"
+        flist.append(input)
+
+        if errortip == 1:
+            showerror(title="出错", message=error_mx)
+        else:
+            for i in flist:
+                f.writelines(i)
 
 
 btnOutput = tk.Button(frame, height=1, width=10, text="OUTPUT", command=getInput, font=("Times", 10, "bold"))
