@@ -298,6 +298,7 @@ def upload_close():
     SecUploadFileModeEntry['state'] = 'disable'
 
 def upload_open():
+    showinfo(title="上传文件配置说明", message="文件拦截生效需要至少一条文件检查的规则")
     variable_SecUploadDir.set("/opt/modsecurity/var/upload/")
     SecUploadDirEntry['state'] = 'normal'
 
@@ -361,125 +362,6 @@ leftPane.add(btnHelpAuth, width=23, height=23, sticky='w')
 rightPane.add(SecUploadFileModeEntry, padx=20, pady=5)
 
 upload_close()
-
-
-
-'''-- Debug log configuration --'''
-DEBUGLOG_Boundary = tk.PanedWindow(frame, width=460, height=40)
-DEBUGLOGLabel = tk.Label(text="*** 调试日志设置 ***")
-DEBUGLOG_Boundary.grid()
-DEBUGLOG_Boundary.add(DEBUGLOGLabel)
-
-def debug_open():
-    dbg_mx = showwarning(title="调试日志及说明",
-                      message="开启调试日志会提供丰富的ModSecurity操作细节.\n注意由于其对性能存在消极影响，默认一般推荐为关闭状态")
-
-    SecDebugLogEntry['state'] = 'normal'
-    variable_SecDebugLog.set("/opt/modsecurity/var/log/debug.log")
-
-    SecDebugLogLevelEntry0['state'] = 'normal'
-    SecDebugLogLevelEntry1['state'] = 'normal'
-    SecDebugLogLevelEntry2['state'] = 'normal'
-    SecDebugLogLevelEntry3['state'] = 'normal'
-    SecDebugLogLevelEntry4['state'] = 'normal'
-    SecDebugLogLevelEntry5['state'] = 'normal'
-    SecDebugLogLevelEntry9['state'] = 'normal'
-    sdll_model.set('3')
-
-def debug_close():
-    SecDebugLogEntry['state'] = 'disable'
-    variable_SecDebugLog.set("--关闭--")
-
-    SecDebugLogLevelEntry0['state'] = 'disable'
-    SecDebugLogLevelEntry1['state'] = 'disable'
-    SecDebugLogLevelEntry2['state'] = 'disable'
-    SecDebugLogLevelEntry3['state'] = 'disable'
-    SecDebugLogLevelEntry4['state'] = 'disable'
-    SecDebugLogLevelEntry5['state'] = 'disable'
-    SecDebugLogLevelEntry9['state'] = 'disable'
-    sdll_model.set('10')
-
-# 开启调试日志
-SecDebugLogAccess = tk.PanedWindow(frame, width=460, height=35)
-leftPane = tk.PanedWindow(SecDebugLogAccess, width=200, height=35)
-rightPane = tk.PanedWindow(SecDebugLogAccess, width=260, height=35)
-SecDebugLogAccessLabel = tk.Label(text="开启调试日志")
-sdl_open = tk.IntVar()
-SecDebugLogAccessEntry1 = tk.Radiobutton(frame, text='开启', value=1, variable=sdl_open, command=debug_open)
-SecDebugLogAccessEntry2 = tk.Radiobutton(frame, text='关闭', value=2, variable=sdl_open, command=debug_close)
-sdl_open.set(2)
-SecDebugLogAccess.grid()
-SecDebugLogAccess.add(leftPane)
-SecDebugLogAccess.add(rightPane)
-leftPane.add(SecDebugLogAccessLabel)
-rightPane.add(SecDebugLogAccessEntry1)
-rightPane.add(SecDebugLogAccessEntry2)
-
-# 调试日志保存位置
-SecDebugLog = tk.PanedWindow(frame, width=460, height=35)
-leftPane = tk.PanedWindow(SecDebugLog, width=200, height=35)
-rightPane = tk.PanedWindow(SecDebugLog, width=260, height=35)
-SecDebugLogLabel = tk.Label(text="调试日志保存位置")
-variable_SecDebugLog = tk.StringVar()
-variable_SecDebugLog.set("/var/log/modsec_debug.log")
-SecDebugLogEntry = tk.Entry(frame, text=variable_SecDebugLog)
-SecDebugLog.grid()
-SecDebugLog.add(leftPane)
-SecDebugLog.add(rightPane)
-leftPane.add(SecDebugLogLabel)
-rightPane.add(SecDebugLogEntry, padx=20, pady=5)
-
-
-# 日志记录等级
-def helpDebugLogLevel():
-    newWindow = tk.Toplevel(window)
-    newWindow.geometry("500x300")
-    newWindow.title("日志记录等级说明")
-    helpText = tk.Text(newWindow, padx=20, pady=20)
-    helpText.pack()
-    helpText.insert(tk.INSERT, "\
-0: no logging\n\n\
-1: errors (intercepted requests) only\n\n\
-2: warnings\n\n\
-3: notices\n\n\
-4: details of how transactions are handled\n\n\
-5: as above, but including information about each piece of information handled\n\n\
-9: log everything, including very detailed debugging information\n\n")
-    helpText.config(state=tk.DISABLED)
-
-def performance_warning():
-    pf_mx = showwarning(title="警告",
-                      message="实际产品中应谨慎使用过高等级的日志记录，该行为会对性能造成较大的影响")
-
-SecDebugLogLevel = tk.PanedWindow(frame, width=460, height=35)
-leftPane = tk.PanedWindow(SecDebugLogLevel, width=120, height=35)
-rightPane = tk.PanedWindow(SecDebugLogLevel, width=340, height=35)
-SecDebugLogLevelLabel = tk.Label(text="日志记录等级")
-btnHelpDebugLog = tk.Button(frame, image=help_img, command=helpDebugLogLevel)
-sdll_model = tk.IntVar()
-SecDebugLogLevelEntry0 = tk.Radiobutton(frame, text='0', value=0, variable=sdll_model)
-SecDebugLogLevelEntry1 = tk.Radiobutton(frame, text='1', value=1, variable=sdll_model)
-SecDebugLogLevelEntry2 = tk.Radiobutton(frame, text='2', value=2, variable=sdll_model)
-SecDebugLogLevelEntry3 = tk.Radiobutton(frame, text='3', value=3, variable=sdll_model)
-SecDebugLogLevelEntry4 = tk.Radiobutton(frame, text='4', value=4, variable=sdll_model, command=performance_warning)
-SecDebugLogLevelEntry5 = tk.Radiobutton(frame, text='5', value=5, variable=sdll_model, command=performance_warning)
-SecDebugLogLevelEntry9 = tk.Radiobutton(frame, text='9', value=9, variable=sdll_model, command=performance_warning)
-sdll_model.set(3)
-SecDebugLogLevel.grid()
-SecDebugLogLevel.add(leftPane, padx=42, width=110, sticky='e')
-SecDebugLogLevel.add(rightPane)
-leftPane.add(SecDebugLogLevelLabel)
-leftPane.add(btnHelpDebugLog, width=23, height=23, sticky='w')
-rightPane.add(SecDebugLogLevelEntry0)
-rightPane.add(SecDebugLogLevelEntry1)
-rightPane.add(SecDebugLogLevelEntry2)
-rightPane.add(SecDebugLogLevelEntry3)
-rightPane.add(SecDebugLogLevelEntry4)
-rightPane.add(SecDebugLogLevelEntry5)
-rightPane.add(SecDebugLogLevelEntry9)
-
-debug_close()
-
 
 
 '''-- Audit log configuration --'''
@@ -694,7 +576,7 @@ sre_model = tk.IntVar()
 SecRuleEngineEntry1 = tk.Radiobutton(frame, text='开启', value=1, variable=sre_model, command=sre_open)
 SecRuleEngineEntry2 = tk.Radiobutton(frame, text='仅监控', value=2, variable=sre_model, command=sre_detection)
 SecRuleEngineEntry3 = tk.Radiobutton(frame, text='关闭', value=3, variable=sre_model, command=sre_close)
-sre_model.set(3)
+sre_model.set(1)
 SecRuleEngine.grid()
 SecRuleEngine.add(leftPane)
 SecRuleEngine.add(rightPane)
@@ -708,9 +590,38 @@ def defaultRules():
     newWindow = tk.Toplevel(window)
     newWindow.geometry("600x400")
     newWindow.title("默认推荐规则内容")
-    helpText = tk.Text(newWindow, width=600, height=300, undo=True, padx=20, pady=20, relief=tk.FLAT)
+    helpText = tk.Text(newWindow, width=600, height=300, undo=True, padx=20, pady=10, relief=tk.FLAT)
     helpText.pack()
-    helpText.insert(tk.INSERT, "默认推荐规则包含以下条目：\n")
+    helpText.insert(tk.INSERT, """
+默认推荐规则包含以下条目：
+SecRule REQUEST_HEADERS:Content-Type "^(?:application(?:/soap\+|/)|text/)xml" \\
+     "id:'200000',phase:1,t:none,t:lowercase,pass,nolog,ctl:requestBodyProcessor=XML"\n
+SecRule REQUEST_HEADERS:Content-Type "^application/json" \\
+     "id:'200001',phase:1,t:none,t:lowercase,pass,nolog,ctl:requestBodyProcessor=JSON"\n
+SecRule &ARGS "@ge 1000" \\
+"id:'200007', phase:2,t:none,log,deny,status:400,msg:'Failed to fully parse request body due to large argument count',severity:2"\n
+SecRule REQBODY_ERROR "!@eq 0" \\
+"id:'200002', phase:2,t:none,log,deny,status:400,msg:'Failed to parse request body.',logdata:'%{reqbody_error_msg}',severity:2"\n
+SecRule MULTIPART_STRICT_ERROR "!@eq 0" \\
+"id:'200003',phase:2,t:none,log,deny,status:400, \\
+msg:'Multipart request body failed strict validation: \\
+PE %{REQBODY_PROCESSOR_ERROR}, \\
+BQ %{MULTIPART_BOUNDARY_QUOTED}, \\
+BW %{MULTIPART_BOUNDARY_WHITESPACE}, \\
+DB %{MULTIPART_DATA_BEFORE}, \\
+DA %{MULTIPART_DATA_AFTER}, \\
+HF %{MULTIPART_HEADER_FOLDING}, \\
+LF %{MULTIPART_LF_LINE}, \\
+SM %{MULTIPART_MISSING_SEMICOLON}, \\
+IQ %{MULTIPART_INVALID_QUOTING}, \\
+IP %{MULTIPART_INVALID_PART}, \\
+IH %{MULTIPART_INVALID_HEADER_FOLDING}, \\
+FL %{MULTIPART_FILE_LIMIT_EXCEEDED}'"\n
+SecRule MULTIPART_UNMATCHED_BOUNDARY "@eq 1" \\
+    "id:'200004',phase:2,t:none,log,deny,msg:'Multipart parser detected a possible unmatched boundary.'"\n
+SecRule TX:/^MSC_/ "!@streq 0" \\
+        "id:'200005',phase:2,t:none,deny,msg:'ModSecurity internal error flagged: %{MATCHED_VAR_NAME}'"\n
+""")
     helpText.config(state=tk.DISABLED)
 DefaultSecRules = tk.PanedWindow(frame, width=460, height=35)
 leftPane = tk.PanedWindow(DefaultSecRules, width=200, height=35)
@@ -759,7 +670,7 @@ leftPane.add(SecRuleLabel)
 leftPane.add(btnHelpSecRules, width=23, height=23, sticky='w')
 rightPane.add(SecRuleEntry, padx=20, pady=5)
 
-sre_close()
+sre_open()
 
 
 '''-- Miscellaneous  --'''
@@ -795,6 +706,125 @@ SecUnicodeMapFile.add(leftPane)
 SecUnicodeMapFile.add(rightPane)
 leftPane.add(SecUnicodeMapFileLabel)
 rightPane.add(SecUnicodeMapFileEntry, padx=20, pady=5)
+
+
+
+'''-- Debug log configuration --'''
+DEBUGLOG_Boundary = tk.PanedWindow(frame, width=460, height=40)
+DEBUGLOGLabel = tk.Label(text="*** 调试日志设置 ***")
+DEBUGLOG_Boundary.grid()
+DEBUGLOG_Boundary.add(DEBUGLOGLabel)
+
+def debug_open():
+    dbg_mx = showwarning(title="调试日志及说明",
+                      message="开启调试日志会提供丰富的ModSecurity操作细节.\n注意由于其对性能存在消极影响，默认一般推荐为关闭状态")
+
+    SecDebugLogEntry['state'] = 'normal'
+    variable_SecDebugLog.set("/var/log/modsec_debug.log")
+
+    SecDebugLogLevelEntry0['state'] = 'normal'
+    SecDebugLogLevelEntry1['state'] = 'normal'
+    SecDebugLogLevelEntry2['state'] = 'normal'
+    SecDebugLogLevelEntry3['state'] = 'normal'
+    SecDebugLogLevelEntry4['state'] = 'normal'
+    SecDebugLogLevelEntry5['state'] = 'normal'
+    SecDebugLogLevelEntry9['state'] = 'normal'
+    sdll_model.set('3')
+
+def debug_close():
+    SecDebugLogEntry['state'] = 'disable'
+    variable_SecDebugLog.set("--关闭--")
+
+    SecDebugLogLevelEntry0['state'] = 'disable'
+    SecDebugLogLevelEntry1['state'] = 'disable'
+    SecDebugLogLevelEntry2['state'] = 'disable'
+    SecDebugLogLevelEntry3['state'] = 'disable'
+    SecDebugLogLevelEntry4['state'] = 'disable'
+    SecDebugLogLevelEntry5['state'] = 'disable'
+    SecDebugLogLevelEntry9['state'] = 'disable'
+    sdll_model.set('10')
+
+# 开启调试日志
+SecDebugLogAccess = tk.PanedWindow(frame, width=460, height=35)
+leftPane = tk.PanedWindow(SecDebugLogAccess, width=200, height=35)
+rightPane = tk.PanedWindow(SecDebugLogAccess, width=260, height=35)
+SecDebugLogAccessLabel = tk.Label(text="开启调试日志")
+sdl_open = tk.IntVar()
+SecDebugLogAccessEntry1 = tk.Radiobutton(frame, text='开启', value=1, variable=sdl_open, command=debug_open)
+SecDebugLogAccessEntry2 = tk.Radiobutton(frame, text='关闭', value=2, variable=sdl_open, command=debug_close)
+sdl_open.set(2)
+SecDebugLogAccess.grid()
+SecDebugLogAccess.add(leftPane)
+SecDebugLogAccess.add(rightPane)
+leftPane.add(SecDebugLogAccessLabel)
+rightPane.add(SecDebugLogAccessEntry1)
+rightPane.add(SecDebugLogAccessEntry2)
+
+# 调试日志保存位置
+SecDebugLog = tk.PanedWindow(frame, width=460, height=35)
+leftPane = tk.PanedWindow(SecDebugLog, width=200, height=35)
+rightPane = tk.PanedWindow(SecDebugLog, width=260, height=35)
+SecDebugLogLabel = tk.Label(text="调试日志保存位置")
+variable_SecDebugLog = tk.StringVar()
+variable_SecDebugLog.set("/var/log/modsec_debug.log")
+SecDebugLogEntry = tk.Entry(frame, text=variable_SecDebugLog)
+SecDebugLog.grid()
+SecDebugLog.add(leftPane)
+SecDebugLog.add(rightPane)
+leftPane.add(SecDebugLogLabel)
+rightPane.add(SecDebugLogEntry, padx=20, pady=5)
+
+
+# 日志记录等级
+def helpDebugLogLevel():
+    newWindow = tk.Toplevel(window)
+    newWindow.geometry("500x300")
+    newWindow.title("日志记录等级说明")
+    helpText = tk.Text(newWindow, padx=20, pady=20)
+    helpText.pack()
+    helpText.insert(tk.INSERT, "\
+0: no logging\n\n\
+1: errors (intercepted requests) only\n\n\
+2: warnings\n\n\
+3: notices\n\n\
+4: details of how transactions are handled\n\n\
+5: as above, but including information about each piece of information handled\n\n\
+9: log everything, including very detailed debugging information\n\n")
+    helpText.config(state=tk.DISABLED)
+
+def performance_warning():
+    pf_mx = showwarning(title="警告",
+                      message="谨慎使用过高等级的日志记录，该行为会对性能造成较大的影响")
+
+SecDebugLogLevel = tk.PanedWindow(frame, width=460, height=35)
+leftPane = tk.PanedWindow(SecDebugLogLevel, width=120, height=35)
+rightPane = tk.PanedWindow(SecDebugLogLevel, width=340, height=35)
+SecDebugLogLevelLabel = tk.Label(text="日志记录等级")
+btnHelpDebugLog = tk.Button(frame, image=help_img, command=helpDebugLogLevel)
+sdll_model = tk.IntVar()
+SecDebugLogLevelEntry0 = tk.Radiobutton(frame, text='0', value=0, variable=sdll_model)
+SecDebugLogLevelEntry1 = tk.Radiobutton(frame, text='1', value=1, variable=sdll_model)
+SecDebugLogLevelEntry2 = tk.Radiobutton(frame, text='2', value=2, variable=sdll_model)
+SecDebugLogLevelEntry3 = tk.Radiobutton(frame, text='3', value=3, variable=sdll_model)
+SecDebugLogLevelEntry4 = tk.Radiobutton(frame, text='4', value=4, variable=sdll_model, command=performance_warning)
+SecDebugLogLevelEntry5 = tk.Radiobutton(frame, text='5', value=5, variable=sdll_model, command=performance_warning)
+SecDebugLogLevelEntry9 = tk.Radiobutton(frame, text='9', value=9, variable=sdll_model, command=performance_warning)
+sdll_model.set(3)
+SecDebugLogLevel.grid()
+SecDebugLogLevel.add(leftPane, padx=42, width=110, sticky='e')
+SecDebugLogLevel.add(rightPane)
+leftPane.add(SecDebugLogLevelLabel)
+leftPane.add(btnHelpDebugLog, width=23, height=23, sticky='w')
+rightPane.add(SecDebugLogLevelEntry0)
+rightPane.add(SecDebugLogLevelEntry1)
+rightPane.add(SecDebugLogLevelEntry2)
+rightPane.add(SecDebugLogLevelEntry3)
+rightPane.add(SecDebugLogLevelEntry4)
+rightPane.add(SecDebugLogLevelEntry5)
+rightPane.add(SecDebugLogLevelEntry9)
+
+debug_close()
+
 
 
 def getInput():
@@ -893,9 +923,12 @@ def getInput():
                 option += ' '
             if xml != '0':
                 option += xml
-            if plain != 0 or html != 0 or xml != 0:
-                input = content + option + "\n\n"
-                flist.append(input)
+            input = content + option + "\n\n"
+            flist.append(input)
+            if plain == '0' and html == '0' and xml == '0':
+                errortip = 1
+                error_mx += "请至少选择一种资源类型的响应体\n"
+
 
             '''SecResponseBodyLimit'''
             SecResponseBodyLimit = SecResponseBodyLimitEntry.get()
@@ -952,10 +985,11 @@ def getInput():
             SecDebugLog = SecDebugLogEntry.get()
             content = "SecDebugLog "
             option = SecDebugLog
-            if SecDebugLog == "":
-                option = "/var/log/modsec_debug.log"
             input = content + option + "\n\n"
             flist.append(input)
+            if SecDebugLog == "":
+                errortip = 1
+                error_mx += "请指定调试日志的保存位置\n"
 
             '''SecDebugLogLevel'''
             SecDebugLogLevel = sdll_model.get()
@@ -990,11 +1024,11 @@ def getInput():
             SecAuditLogParts = SecAuditLogPartsEntry.get()
             content = "SecAuditLogParts "
             option = SecAuditLogParts
+            if SecAuditLogParts == "":
+                option = "ABEFHZ"
             input = content + option + "\n\n"
             flist.append(input)
-            if SecAuditLogParts == "":
-                errortip = 1
-                error_mx += "请指定审计日志的记录内容\n"
+
 
             '''SecAuditLogType'''
             SecAuditLogType = salt_model.get()
@@ -1034,36 +1068,35 @@ def getInput():
         if SecRuleEngine == 1 or SecRuleEngine == 2:
             '''DefaultSecRules'''
             DefaultSecRules = default_rule_check.get()
-            print(DefaultSecRules)
             if DefaultSecRules == 1:
                 input = \
 """
-SecRule REQUEST_HEADERS:Content-Type "^(?:application(?:/soap\+|/)|text/)xml" \\ \n
+SecRule REQUEST_HEADERS:Content-Type "^(?:application(?:/soap\+|/)|text/)xml" \\
      "id:'200000',phase:1,t:none,t:lowercase,pass,nolog,ctl:requestBodyProcessor=XML"\n
-SecRule REQUEST_HEADERS:Content-Type "^application/json" \\\n
+SecRule REQUEST_HEADERS:Content-Type "^application/json" \\
      "id:'200001',phase:1,t:none,t:lowercase,pass,nolog,ctl:requestBodyProcessor=JSON"\n
-SecRule &ARGS "@ge 1000" \\\n
+SecRule &ARGS "@ge 1000" \\
 "id:'200007', phase:2,t:none,log,deny,status:400,msg:'Failed to fully parse request body due to large argument count',severity:2"\n
-SecRule REQBODY_ERROR "!@eq 0" \\\n
+SecRule REQBODY_ERROR "!@eq 0" \\
 "id:'200002', phase:2,t:none,log,deny,status:400,msg:'Failed to parse request body.',logdata:'%{reqbody_error_msg}',severity:2"\n
-SecRule MULTIPART_STRICT_ERROR "!@eq 0" \\\n
-"id:'200003',phase:2,t:none,log,deny,status:400, \\\n
-msg:'Multipart request body failed strict validation: \\\n
-PE %{REQBODY_PROCESSOR_ERROR}, \\\n
-BQ %{MULTIPART_BOUNDARY_QUOTED}, \\\n
-BW %{MULTIPART_BOUNDARY_WHITESPACE}, \\\n
-DB %{MULTIPART_DATA_BEFORE}, \\\n
-DA %{MULTIPART_DATA_AFTER}, \\\n
-HF %{MULTIPART_HEADER_FOLDING}, \\\n
-LF %{MULTIPART_LF_LINE}, \\\n
-SM %{MULTIPART_MISSING_SEMICOLON}, \\\n
-IQ %{MULTIPART_INVALID_QUOTING}, \\\n
-IP %{MULTIPART_INVALID_PART}, \\\n
-IH %{MULTIPART_INVALID_HEADER_FOLDING}, \\\n
+SecRule MULTIPART_STRICT_ERROR "!@eq 0" \\
+"id:'200003',phase:2,t:none,log,deny,status:400, \\
+msg:'Multipart request body failed strict validation: \\
+PE %{REQBODY_PROCESSOR_ERROR}, \\
+BQ %{MULTIPART_BOUNDARY_QUOTED}, \\
+BW %{MULTIPART_BOUNDARY_WHITESPACE}, \\
+DB %{MULTIPART_DATA_BEFORE}, \\
+DA %{MULTIPART_DATA_AFTER}, \\
+HF %{MULTIPART_HEADER_FOLDING}, \\
+LF %{MULTIPART_LF_LINE}, \\
+SM %{MULTIPART_MISSING_SEMICOLON}, \\
+IQ %{MULTIPART_INVALID_QUOTING}, \\
+IP %{MULTIPART_INVALID_PART}, \\
+IH %{MULTIPART_INVALID_HEADER_FOLDING}, \\
 FL %{MULTIPART_FILE_LIMIT_EXCEEDED}'"\n
-SecRule MULTIPART_UNMATCHED_BOUNDARY "@eq 1" \\\n
+SecRule MULTIPART_UNMATCHED_BOUNDARY "@eq 1" \\
     "id:'200004',phase:2,t:none,log,deny,msg:'Multipart parser detected a possible unmatched boundary.'"\n
-SecRule TX:/^MSC_/ "!@streq 0" \\\n
+SecRule TX:/^MSC_/ "!@streq 0" \\
         "id:'200005',phase:2,t:none,deny,msg:'ModSecurity internal error flagged: %{MATCHED_VAR_NAME}'"\n
 """
                 flist.append(input)
